@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Closing Window...</title>
+    <script>
+      // Attempt to close the window after a delay or after user interaction
+      function goBackToApp() {
+        // Use the custom scheme to redirect back to your mobile app
+        window.location.href = "oauth2://"; // Replace with your app's scheme
+      }
+
+      // Close the window after a few seconds or optionally wait for user input
+      setTimeout(goBackToApp, 3000); // Automatically redirects after 3 seconds
+    </script>
+  </head>
+  <body>
+    <h1>Redirecting...</h1>
+    <p>Your login was successful. Please click the button to go back to the app.</p>
+    <button onclick="goBackToApp()">Go Back to App</button>
+  </body>
+</html>

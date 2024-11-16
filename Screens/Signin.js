@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,44 +9,92 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import LottieView from 'lottie-react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
+  Alert,
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
+import LottieView from "lottie-react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 export default function Signin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigation = useNavigation();
+  const isfocused = useIsFocused();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSignIn = () => {
-    // Implement sign in logic here
-    console.log('Sign in with:', email, password);
+  const checkFocus=async()=>{
+    AsyncStorage.clear();
+    if (isfocused) {
+      const id = await AsyncStorage.getItem("id");
+      console.log("id: ",id)
+      if (id) {
+        navigation.navigate("home");
+      }
+    }
+  }
+  useEffect( () => {
+    checkFocus();
+  }, [isfocused]);
+
+  const handleSignIn = async () => {
+    console.log("started");
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    if (!trimmedEmail || !trimmedPassword) {
+      Alert.alert("Error", "Please enter both email and password.");
+      return;
+    }
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_SERVER}/auth/signin`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      }
+    );
+    const result = await response.json();
+    if (response.status == 200) {
+      setEmail("");
+      setPassword("");
+      await AsyncStorage.setItem("id", JSON.stringify(result.id));
+      navigation.navigate("home");
+    } else if (response.status == 401) {
+      Alert.alert("Error", "Invalid credentials");
+    } else if (response.status == 404) {
+      Alert.alert("Error", "User not found");
+    } else {
+      Alert.alert("Error", "Something went wrong");
+    }
+    console.log("Sign in with:", email, password);
   };
 
   const handleGoogleSignIn = () => {
     // Implement Google sign in logic here
-    console.log('Sign in with Google');
+    console.log("Sign in with Google");
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#E9DEFA', '#FBFCDB', '#E9DEFA']}
+        colors={["#E9DEFA", "#FBFCDB", "#E9DEFA"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.content}
         >
           <LottieView
             source={{
-              uri: 'https://lottie.host/cafbb392-0f9b-4a49-b251-0552efa7e17e/uJ55ujati0.json',
+              uri: "https://lottie.host/cafbb392-0f9b-4a49-b251-0552efa7e17e/uJ55ujati0.json",
             }}
             autoPlay
             loop
@@ -57,7 +105,12 @@ export default function Signin() {
           </Text>
 
           <View style={styles.inputContainer}>
-            <FontAwesome5 name="envelope" size={20} color="#6B4CE6" style={styles.inputIcon} />
+            <FontAwesome5
+              name="envelope"
+              size={20}
+              color="#6B4CE6"
+              style={styles.inputIcon}
+            />
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -70,7 +123,12 @@ export default function Signin() {
           </View>
 
           <View style={styles.inputContainer}>
-            <FontAwesome5 name="lock" size={20} color="#6B4CE6" style={styles.inputIcon} />
+            <FontAwesome5
+              name="lock"
+              size={20}
+              color="#6B4CE6"
+              style={styles.inputIcon}
+            />
             <TextInput
               style={styles.input}
               placeholder="Password"
@@ -83,7 +141,7 @@ export default function Signin() {
 
           <TouchableOpacity style={styles.button} onPress={handleSignIn}>
             <LinearGradient
-              colors={['#6B4CE6', '#9D7BEA']}
+              colors={["#6B4CE6", "#9D7BEA"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.buttonGradient}
@@ -94,7 +152,10 @@ export default function Signin() {
 
           <Text style={styles.orText}>or</Text>
 
-          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={handleGoogleSignIn}
+          >
             <FontAwesome5 name="google" size={20} color="#6B4CE6" />
             <Text style={styles.googleButtonText}>Sign in with Google</Text>
           </TouchableOpacity>
@@ -118,28 +179,28 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 30,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   animation: {
     width: width * 0.4,
     height: width * 0.4,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginBottom: 20,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2D1F4B',
+    fontWeight: "bold",
+    color: "#2D1F4B",
     marginBottom: 30,
-    textAlign: 'center',
+    textAlign: "center",
   },
   highlightText: {
-    color: '#6B4CE6',
+    color: "#6B4CE6",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderRadius: 12,
     marginBottom: 15,
     paddingHorizontal: 15,
@@ -150,49 +211,49 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 50,
-    color: '#2D1F4B',
+    color: "#2D1F4B",
     fontSize: 16,
   },
   button: {
     height: 56,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginTop: 15,
   },
   buttonGradient: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   orText: {
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginVertical: 15,
     fontSize: 16,
   },
   googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
     height: 56,
     borderRadius: 12,
     marginBottom: 15,
   },
   googleButtonText: {
-    color: '#6B4CE6',
+    color: "#6B4CE6",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 10,
   },
   forgotPassword: {
-    color: '#6B4CE6',
-    textAlign: 'center',
+    color: "#6B4CE6",
+    textAlign: "center",
     marginTop: 15,
     fontSize: 16,
   },

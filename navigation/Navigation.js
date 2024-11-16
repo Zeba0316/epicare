@@ -12,7 +12,7 @@ const Navigation = () => {
   return (
     <View style={{ flex: 1 }}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="home">
+        <Stack.Navigator initialRouteName="signup">
           <Stack.Screen name="welcome" component={Welcome} options={{ headerShown: false }} />
           <Stack.Screen name="test" component={Test} options={{ headerShown: false }} />
           <Stack.Screen name="signin" component={Signin} options={{ headerShown: false }} />

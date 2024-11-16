@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,26 +10,26 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import LottieView from 'lottie-react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
+  Alert
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome5 } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "@react-navigation/native";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 export default function Signup() {
   const navigation = useNavigation();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [image, setImage] = useState(null);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -40,36 +40,75 @@ export default function Signup() {
     }
   };
 
-  const handleSignUp = () => {
-    // Implement sign-up logic here
-    console.log('Sign up with:', { name, email, password, image });
-    // Navigate to the next screen or show success message
+  const handleSignUp = async () => {
+    console.log("started");
+    
+    const trimmedEmail = email.trim();
+    const trimmedName = name.trim();
+    const trimmedPassword = password.trim();
+    if (!trimmedEmail || !trimmedName || !trimmedPassword) {
+      Alert.alert("Error", "Please enter All fields.");
+      return;
+    }
+    const form = new FormData();
+    form.append("username", trimmedName);
+    form.append("email", trimmedEmail);
+    form.append("password", trimmedPassword);
+    if (image) {
+      form.append("image", {
+        uri: image,
+        type: "image/jpeg",
+        name: "image.jpg",
+      });
+    }
+    console.log(form);
+    
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_SERVER}/auth/signup`,
+      {
+        method: "POST",
+        body: form,
+      }
+    );
+    const result = await response.json();
+    console.log(response.status)
+    if (response.status === 200) {
+      Alert.alert("Success", "User created successfully");
+      navigation.navigate("signin");
+    } else if (response.status === 400) {
+      Alert.alert("Error", "User already exists");
+    } else {
+      Alert.alert("Error", "Something went wrong");
+    }
+    console.log("Sign up with:", { name, email, password, image });
   };
 
   const handleGoogleSignUp = () => {
     // Implement Google sign up logic here
-    console.log('Sign up with Google');
+    console.log("Sign up with Google");
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#E9DEFA', '#FBFCDB', '#E9DEFA']}
+        colors={["#E9DEFA", "#FBFCDB", "#E9DEFA"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.content}
         >
-         
           <Text style={styles.title}>
             Sign up for <Text style={styles.highlightText}>EpiCare</Text>
           </Text>
 
-          <TouchableOpacity onPress={pickImage} style={styles.imagePickerContainer}>
+          <TouchableOpacity
+            onPress={pickImage}
+            style={styles.imagePickerContainer}
+          >
             <View style={styles.imagePlaceholder}>
               {image ? (
                 <Image source={{ uri: image }} style={styles.profileImage} />
@@ -81,7 +120,12 @@ export default function Signup() {
           </TouchableOpacity>
 
           <View style={styles.inputContainer}>
-            <FontAwesome5 name="user" size={20} color="#6B4CE6" style={styles.inputIcon} />
+            <FontAwesome5
+              name="user"
+              size={20}
+              color="#6B4CE6"
+              style={styles.inputIcon}
+            />
             <TextInput
               style={styles.input}
               placeholder="Name"
@@ -92,7 +136,12 @@ export default function Signup() {
           </View>
 
           <View style={styles.inputContainer}>
-            <FontAwesome5 name="envelope" size={20} color="#6B4CE6" style={styles.inputIcon} />
+            <FontAwesome5
+              name="envelope"
+              size={20}
+              color="#6B4CE6"
+              style={styles.inputIcon}
+            />
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -105,7 +154,12 @@ export default function Signup() {
           </View>
 
           <View style={styles.inputContainer}>
-            <FontAwesome5 name="lock" size={20} color="#6B4CE6" style={styles.inputIcon} />
+            <FontAwesome5
+              name="lock"
+              size={20}
+              color="#6B4CE6"
+              style={styles.inputIcon}
+            />
             <TextInput
               style={styles.input}
               placeholder="Password"
@@ -118,7 +172,7 @@ export default function Signup() {
 
           <TouchableOpacity style={styles.button} onPress={handleSignUp}>
             <LinearGradient
-              colors={['#6B4CE6', '#9D7BEA']}
+              colors={["#6B4CE6", "#9D7BEA"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.buttonGradient}
@@ -129,14 +183,17 @@ export default function Signup() {
 
           <Text style={styles.orText}>or</Text>
 
-          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignUp}>
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={handleGoogleSignUp}
+          >
             <FontAwesome5 name="google" size={20} color="#6B4CE6" />
             <Text style={styles.googleButtonText}>Sign up with Google</Text>
           </TouchableOpacity>
 
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
               <Text style={styles.loginLink}>Log In</Text>
             </TouchableOpacity>
           </View>
@@ -156,35 +213,35 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 30,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   animation: {
     width: width * 0.4,
     height: width * 0.4,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginBottom: 20,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2D1F4B',
+    fontWeight: "bold",
+    color: "#2D1F4B",
     marginBottom: 30,
-    textAlign: 'center',
+    textAlign: "center",
   },
   highlightText: {
-    color: '#6B4CE6',
+    color: "#6B4CE6",
   },
   imagePickerContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   imagePlaceholder: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 10,
   },
   profileImage: {
@@ -193,13 +250,13 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   imagePickerText: {
-    color: '#6B4CE6',
+    color: "#6B4CE6",
     fontSize: 16,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderRadius: 12,
     marginBottom: 15,
     paddingHorizontal: 15,
@@ -210,58 +267,58 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 50,
-    color: '#2D1F4B',
+    color: "#2D1F4B",
     fontSize: 16,
   },
   button: {
     height: 56,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginTop: 15,
   },
   buttonGradient: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   orText: {
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginVertical: 15,
     fontSize: 16,
   },
   googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
     height: 56,
     borderRadius: 12,
     marginBottom: 15,
   },
   googleButtonText: {
-    color: '#6B4CE6',
+    color: "#6B4CE6",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 10,
   },
   loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 15,
   },
   loginText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
   },
   loginLink: {
-    color: '#6B4CE6',
+    color: "#6B4CE6",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

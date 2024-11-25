@@ -27,12 +27,12 @@ export default function Signin() {
   const [password, setPassword] = useState("");
 
   const checkFocus=async()=>{
-    AsyncStorage.clear();
+    // AsyncStorage.clear();
     if (isfocused) {
       const id = await AsyncStorage.getItem("id");
       console.log("id: ",id)
       if (id) {
-        navigation.navigate("home");
+        navigation.navigate("maintab",{screen:"home",params:{id:id}});
       }
     }
   }
@@ -63,7 +63,7 @@ export default function Signin() {
       setEmail("");
       setPassword("");
       await AsyncStorage.setItem("id", JSON.stringify(result.id));
-      navigation.navigate("home");
+      navigation.navigate("maintab",{screen:"home",params:{id:result.id}});
     } else if (response.status == 401) {
       Alert.alert("Error", "Invalid credentials");
     } else if (response.status == 404) {
@@ -160,8 +160,10 @@ export default function Signin() {
             <Text style={styles.googleButtonText}>Sign in with Google</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
-            <Text style={styles.forgotPassword}>Forgot Password?</Text>
+          <TouchableOpacity
+          onPress={() => navigation.navigate("signup")}
+          >
+            <Text style={styles.forgotPassword}>Don't have an account?,<Text style={{fontWeight: "bold"}}> Sign up</Text></Text>
           </TouchableOpacity>
         </KeyboardAvoidingView>
       </LinearGradient>

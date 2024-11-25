@@ -69,4 +69,16 @@ router.post("/signup",upload.single('image'), async (req, res) => {
 
 });
 
+// /auth/getInfo/:id
+router.get("/getInfo/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await db("users").where({ id }).first();
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error getting user info:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;

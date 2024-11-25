@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,82 +9,75 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Image,
-  Alert
+  Alert,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
+import LottieView from "lottie-react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
-export default function Signup() {
+export default function SigninDr() {
   const navigation = useNavigation();
-  const [name, setName] = useState("");
+  const isfocused = useIsFocused();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [image, setImage] = useState(null);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+  const checkFocus = async () => {
+    AsyncStorage.clear();
+    if (isfocused) {
+      const id = await AsyncStorage.getItem("id");
+      console.log("id: ", id);
+      if (id) {
+        navigation.navigate("home");
+      }
     }
   };
+  useEffect(() => {
+    checkFocus();
+  }, [isfocused]);
 
-  const handleSignUp = async () => {
+  const handleSignIn = async () => {
+    console.log("started");
     const trimmedEmail = email.trim();
-    const trimmedName = name.trim();
     const trimmedPassword = password.trim();
-    if (!trimmedEmail || !trimmedName || !trimmedPassword|| !image) {
-      Alert.alert("Error", "Please enter All fields.");
+    if (!trimmedEmail || !trimmedPassword) {
+      Alert.alert("Error", "Please enter both email and password.");
       return;
     }
-    const form = new FormData();
-    form.append("username", trimmedName);
-    form.append("email", trimmedEmail);
-    form.append("password", trimmedPassword);
-    if (image) {
-      form.append("image", {
-        uri: image,
-        type: "image/jpeg",
-        name: "image.jpg",
-      });
-    }
-    console.log(form);
-    
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_SERVER}/auth/signup`,
+      `${process.env.EXPO_PUBLIC_SERVER}/auth/signin`,
       {
         method: "POST",
-        body: form,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       }
     );
-    console.log("started");
     const result = await response.json();
-    console.log(response.status)
-    if (response.status === 200) {
-      Alert.alert("Success", "User created successfully");
-      // navigation.navigate("signin");
-    } else if (response.status === 400) {
-      Alert.alert("Error", "User already exists");
+    if (response.status == 200) {
+      setEmail("");
+      setPassword("");
+      await AsyncStorage.setItem("id", JSON.stringify(result.id));
+      navigation.navigate("home");
+    } else if (response.status == 401) {
+      Alert.alert("Error", "Invalid credentials");
+    } else if (response.status == 404) {
+      Alert.alert("Error", "User not found");
     } else {
       Alert.alert("Error", "Something went wrong");
     }
-    console.log("Sign up with:", { name, email, password, image });
+    console.log("Sign in with:", email, password);
   };
 
-  const handleGoogleSignUp = () => {
-    // Implement Google sign up logic here
-    console.log("Sign up with Google");
+  const handleGoogleSignIn = () => {
+    // Implement Google sign in logic here
+    console.log("Sign in with Google");
   };
 
   return (
@@ -100,39 +93,17 @@ export default function Signup() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.content}
         >
+          <LottieView
+            source={{
+              uri: "https://lottie.host/cafbb392-0f9b-4a49-b251-0552efa7e17e/uJ55ujati0.json",
+            }}
+            autoPlay
+            loop
+            style={styles.animation}
+          />
           <Text style={styles.title}>
-            Sign up for <Text style={styles.highlightText}>EpiCare</Text>
+            Sign in to <Text style={styles.highlightText}>EpiCare</Text>
           </Text>
-
-          <TouchableOpacity
-            onPress={pickImage}
-            style={styles.imagePickerContainer}
-          >
-            <View style={styles.imagePlaceholder}>
-              {image ? (
-                <Image source={{ uri: image }} style={styles.profileImage} />
-              ) : (
-                <FontAwesome5 name="user-plus" size={30} color="#6B4CE6" />
-              )}
-            </View>
-            <Text style={styles.imagePickerText}>Add Profile Picture</Text>
-          </TouchableOpacity>
-
-          <View style={styles.inputContainer}>
-            <FontAwesome5
-              name="user"
-              size={20}
-              color="#6B4CE6"
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Name"
-              placeholderTextColor="#666"
-              value={name}
-              onChangeText={setName}
-            />
-          </View>
 
           <View style={styles.inputContainer}>
             <FontAwesome5
@@ -169,14 +140,14 @@ export default function Signup() {
             />
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+          <TouchableOpacity style={styles.button} onPress={handleSignIn}>
             <LinearGradient
               colors={["#6B4CE6", "#9D7BEA"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.buttonGradient}
             >
-              <Text style={styles.buttonText}>Sign Up</Text>
+              <Text style={styles.buttonText}>Sign In</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -184,18 +155,15 @@ export default function Signup() {
 
           <TouchableOpacity
             style={styles.googleButton}
-            onPress={handleGoogleSignUp}
+            onPress={handleGoogleSignIn}
           >
-            <FontAwesome5 name="google" size={20} color="#6B4CE6" />
-            <Text style={styles.googleButtonText}>Sign up with Google</Text>
+            <MaterialCommunityIcons name="doctor" size={20} color="#6B4CE6" />
+            <Text style={styles.googleButtonText}>SignIn as Dr</Text>
           </TouchableOpacity>
 
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("signin")}>
-              <Text style={styles.loginLink}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity>
+            <Text style={styles.forgotPassword}>Forgot Password?</Text>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </LinearGradient>
     </SafeAreaView>
@@ -229,28 +197,6 @@ const styles = StyleSheet.create({
   },
   highlightText: {
     color: "#6B4CE6",
-  },
-  imagePickerContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  imagePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  imagePickerText: {
-    color: "#6B4CE6",
-    fontSize: 16,
   },
   inputContainer: {
     flexDirection: "row",
@@ -306,18 +252,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 10,
   },
-  loginContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 15,
-  },
-  loginText: {
-    color: "#666",
-    fontSize: 16,
-  },
-  loginLink: {
+  forgotPassword: {
     color: "#6B4CE6",
+    textAlign: "center",
+    marginTop: 15,
     fontSize: 16,
-    fontWeight: "600",
   },
 });

@@ -13,7 +13,8 @@ const VideoCallScreen = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEmergency, setIsEmergency] = useState(false);
   const [key, setKey] = useState(0);
-  const meetingUrl = route.params?.meetingUrl || 'https://razasfs.daily.co/DvECa9zs4qoMZwvu5ncb';
+  // const meetingUrl = route.params?.meetingUrl || 'https://razasfs.daily.co/DvECa9zs4qoMZwvu5ncb';
+  const meetingUrl = "https://meet.google.com/xhg-zebu-brv";
 
   useEffect(() => {
     const requestPermissions = async () => {

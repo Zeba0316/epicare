@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI("AIzaSyDl74GliVPGx3s8ZFfXtvnAPuSl1iAy848");
+const genAI = new GoogleGenerativeAI("AIzaSyB6l-US680jaE7Ph5KlfuiDWp-8acv7KuY");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const SeizureDetails = ({ route }) => {

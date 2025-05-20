@@ -164,13 +164,13 @@ export default function ChatScreen() {
                   {item.message}
                 </Text>
               </View>
-              <Text style={styles.timestamp}>
+              {/* <Text style={styles.timestamp}>
                 {`${new Date(
                   new Date(item.timestamp).getTime() + 5.5 * 60 * 60 * 1000
                 ).getHours()}: ${new Date(
                   new Date(item.timestamp).getTime() + 5.5 * 60 * 60 * 1000
                 ).getMinutes()}`}
-              </Text>
+              </Text> */}
             </View>
           </View>
         }

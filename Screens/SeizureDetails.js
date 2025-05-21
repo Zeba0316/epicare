@@ -54,7 +54,7 @@ const SeizureDetails = ({ route }) => {
   const sendToDoctor = async () => {
     try {
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_SERVER}/seizure/sendToDoctor`,
+        `https://backend-zeba-portfolio.vercel.app/sendToDoctor`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
